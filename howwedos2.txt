@@ -1,0 +1,36 @@
+våran algoritm:
+vi läser in all data från stdin till en sträng
+med våran lexer så bygger vi en lista av syntaktiska atomer (tokens), t.ex [‘FORW’, 123, ‘.’, ‘UP’, ‘.’]. lexern använder våran EBNF-grammatik för att kunna detektera syntaxfel.
+med våran parser bygger vi ett syntaxträd från den flata listan som producerats av lexern. vi går alltså från [‘FORW’, 123, ‘.’, ‘UP’, ‘.’] till t.ex [[‘FORW’, 123], [‘UP’]]
+med våran compiler kompilerar vi (översätter) syntaxträdet till den output som efterfrågas i labblydelsen
+
+våra lösningar:
+vi läser in stdin via import sys; data = sys.stdin.read()
+vi gör en lexer med en metod för varje icketerminal i vår EBNF. lexern startas genom att förse icketerminalen ‘program’ med hela källkodsträngen, en position “1” och en tom lista, lexern följer sedan vår EBNF-grammatik och skickar med listan i varje steg så att denna kan fyllas på under lexerns arbete. varje metod i lexern måste konsumera den faktiska sträng som metoden matchar (om det matchar), dvs. denna del av källkodsträngen måste tas bort innan källkodsträngen går vidare till nästa metod. positionstalet måste ökas med längden av den konsumerade strängen. vid syntaxfel (någon metod misslyckas läsa det som förväntas) kan man rapportera radnumret där felet påträffades genom att läsa hela källkodsträngen och räkna ut vilken rad man hamnar på om man befinner sig på position enligt positionstalet.
+
+
+
+digit ::= ‘1’ | ‘2’ | ‘3’ | ‘4’ | ‘5’ | ‘6’ | ‘7’ | ‘8’ | ‘9’
+hexdigit ::= digit | 'a' | 'b' | 'c' | 'd' | 'e' | 'f'
+zero ::= ‘0’
+integer ::= digit { digit } { zero }
+
+color ::= ‘#’ (hexdigit|zero) (hexdigit|zero) (hexdigit|zero) (hexdigit|zero) (hexdigit|zero) (hexdigit|zero)
+
+end-statement ::= ‘.’
+
+comment ::= ‘%’ any-shit newline
+forw-statement ::= ‘FORW’ integer end-statement
+back-statement ::= ‘BACK’ integer end-statement
+left-statement ::= ‘LEFT’ integer end-statement
+right-statement ::= ‘RIGHT’ integer end-statement
+up-statement ::= ‘UP’ end-statement
+down-statement ::= ‘DOWN’ end-statement
+color-statement ::= ‘COLOR’ color end-statement
+
+repable-statement ::= forw-statement | back-statement | left-statement | right-statement | up-statement | down-statement | color-statement
+rep-statement ::= ‘REP’ integer ( statement | ‘“‘ statement { statement } ‘“‘)
+
+statement ::= repable-statement | rep-statement
+
+program ::= empty | statement { statement }

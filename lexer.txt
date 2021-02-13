@@ -1,0 +1,155 @@
+uppgift 1: lexer
+
+en klass, "lexer", med följande API:
+    
+    konstruktor:
+        konstruktorn tar en sträng: lexer(string s)
+        strängen är hela källkoden som ska läsas
+        
+        exempel:
+            x = lexer(sys.stdin.read())
+    
+    
+    nästa token:
+        en metod next() utan argument. metoden ska
+        returnera nästa "token", alltså nästa bit av
+        atomisk (odelbar) syntax. returvärdet ska
+        vara en tupel av formen (string, string)
+        där den första strängen är typnamnet som
+        har matchat (t.ex integer) och den andra är
+        den faktiska text ur källkoden som har matchat
+        (t.ex 123). om ingen känd typ kan matchas eller
+        om datan är slut skall metoden returnera False.
+        metoden skall automatiskt hoppa förbi kommentarer
+        och whitespace.
+        
+        exempel:
+            x = lexer("REP 5 BACK 1.")
+            print(x.next()) # skriver ut ('keyword-rep', 'REP')
+            print(x.next()) # skriver ut ('integer', '5')
+            print(x.next()) # skriver ut ('keyword-back', 'BACK')
+            print(x.next()) # skriver ut ('integer', '1')
+            print(x.next()) # skriver ut False
+        
+        typnamn som skall finnas:
+            'color-hex'
+            'keyword-color'
+            'keyword-up'
+            'keyword-down'
+            'keyword-left'
+            'keyword-right'
+            'keyword-forw'
+            'keyword-back'
+            'keyword-rep'
+            'quote'
+            'end-statement'
+            'positive-integer'
+    
+    
+    lägg tillbaka token:
+        en metod put_back() utan argument. metoden ska
+        återföra det token som senast togs ut med next()
+        tillbaka till början av den aktuella källkodsträngen.
+        om det inte fanns fler tokens att lägga tillbaka skall
+        metoden returnera False, i annat fall skall True returneras.
+        
+        exempel:
+            x = lexer("REP 5 BACK 1.")
+            print(x.next()) # skriver ut ('keyword-rep', 'REP')
+            x.put_back()
+            print(x.next()) # skriver ut ('keyword-rep', 'REP')
+            print(x.next()) # skriver ut ('integer', '5')
+            x.put_back()
+            x.put_back()
+            print(x.next()) # skriver ut ('keyword-rep', 'REP')
+    
+    
+    kontrollera om det finns fler tokens:
+        en metod has_next() utan argument. metoden ska returnera
+        True om det finns fler tokens att hämta med next(), och
+        False om det inte finns fler.
+        
+        exempel:
+            x = lexer("REP 5 BACK 1.")
+            print(x.has_next()) # skriver ut True
+            x.next()
+            x.next()
+            x.next()
+            x.next()
+            x.next()
+            print(x.has_next()) # skriver ut False
+    
+    
+    aktuell "tokenposition":
+        en metod pos() utan argument. metoden ska returnera antalet
+        tokens som har tagits ut med next(), där hänsyn tas till
+        de som stoppats tillbaka med put_back().
+        
+        exempel:
+            x = lexer("REP 5 BACK 1.")
+            print(x.pos()) # skriver ut 0
+            x.next()
+            x.next()
+            print(x.pos()) # skriver ut 2
+            x.put_back()
+            print(x.pos()) # skriver ut 1
+    
+    
+    spola tillbaka till given "tokenposition":
+        en metod rewind(int) som tar en integer. metoden skall
+        lägga tillbaka tokens tills dess att lexern befinner sig
+        på den tokenposition som angavs i argumentet.
+        
+        exempel:
+            x = lexer("REP 5 BACK 1.")
+            print(x.has_next()) # skriver ut True
+            x.next()
+            x.next()
+            x.next()
+            x.next()
+            x.next()
+            print(x.pos()) # skriver ut 5
+            print(x.has_next()) # skriver ut False
+            x.rewind(0)
+            print(x.pos()) # skriver ut 0
+            print(x.has_next()) # skriver ut True
+    
+    
+    kontrollera om lexern har lexat all källkod:
+        en metod at_end() utan argument. om lexern i nuvarande läge inte 
+        har mer text att skanna skall metoden returnera True, i annat
+        fall skall metoden returnera False. observera att det är skillnad
+        på om det finns fler tokens och om det finns mer text. det kan
+        finnas mer text som består av ogiltiga tokens, alltså mer text men
+        inte fler tokens. däremot kan det inte vara slut på text men ändå
+        finnas mer tokens.
+        
+        exempel:
+            x = lexer("REP 5 BACK 1.")
+            print(x.at_end()) # skriver ut False
+            x.next()
+            x.next()
+            x.next()
+            x.next()
+            x.next()
+            print(x.at_end()) # skriver ut True
+        
+        exempel:
+            x = lexer("REP KORVGUBBE")
+            print(x.has_next()) # skriver ut True
+            print(x.at_end()) # skriver ut False
+            x.next()
+            print(x.has_next()) # skriver ut False
+            print(x.at_end()) # skriver ut False
+
+
+tips:
+    för att hålla reda på "tokenposition" och för att implementera återförandet
+    av uttagna tokens kan det vara lämpligt att använda en stack.
+    
+    next() pushar uttagna tokens på stacken
+    put_back() poppar från stacken och lägger tillbaka i texten
+    pos() returnerar storleken på stacken
+    rewind(x) ropar på put_back() tills pos() = x
+    
+    i python är list en bra stack. list.append() för push och list.pop() för pop
